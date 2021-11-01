@@ -91,6 +91,7 @@ main =
 type alias Model =
     { windowHeight : Int
     , deviceClass : Element.DeviceClass
+    , posts : List Post
     }
 
 
@@ -98,6 +99,18 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { windowHeight = 1024
       , deviceClass = Element.Desktop
+      , posts =
+            [ { title = "Switching to Emacs"
+              , date = "10 Oct 2021"
+              , tags = [ "Emacs", "Text Editor" ]
+              , bodyText = "Emacs has been a really helpful experience to me especially with Magit, Evilmode and Orgmode. So I have decided to switch all of my programming and typing stuff to emacs. ..."
+              }
+            , { title = "Figma like open source tool penpot looks nice"
+              , date = "3 Oct 2021"
+              , tags = [ "Penpot", "Figma", "Designing" ]
+              , bodyText = "Recently I checked out Penpot; a figma open-source alternative made in clojure script. Clojure is functional lisp like java, so clojure script should be javascript but functional lisp like. I ran Penpot in a docker instance, and it was just as fast as figma which uses a wasm binary to draw the editor canvas."
+              }
+            ]
       }
     , Task.perform GotNewViewport Browser.Dom.getViewport
     )
@@ -119,6 +132,7 @@ update msg model =
         GotNewViewport viewport ->
             ( { windowHeight = round viewport.viewport.height
               , deviceClass = model.deviceClass
+              , posts = model.posts
               }
             , Cmd.none
             )
@@ -142,6 +156,7 @@ view model =
             ]
             [ hero model.windowHeight model.deviceClass
             , portfolio
+            , blog model.posts
             ]
 
 
@@ -284,3 +299,72 @@ portfolio =
                 (text "My Portfolio")
             ]
 
+
+blog : List Post -> Element msg
+blog posts =
+    column
+        [ paddingXY 240 77
+        , spacing 50
+        ]
+        [ el
+            [ Font.heavy
+            , Font.size 48
+            ]
+          <|
+            text "Blog"
+        , column [ spacing 40 ] <| List.map blogPost posts
+        ]
+
+
+type alias Post =
+    { title : String
+    , date : String
+    , tags : List String
+    , bodyText : String
+    }
+
+
+blogPost : Post -> Element msg
+blogPost post =
+    column
+        [ spacing 10 ]
+        [ el
+            [ Font.size 24
+            , Font.heavy
+            ]
+          <|
+            text post.title
+        , blogMetadata post.date post.tags
+        , bodyTeaser post.bodyText
+        ]
+
+
+blogMetadata : String -> List String -> Element msg
+blogMetadata date tags =
+    row
+        [ Background.color bgSecondary
+        , paddingXY 10 3
+        , spacing 10
+        , Font.color fgSecondary
+        , Border.rounded 5
+        ]
+        [ text date
+        , row [ spacing 5 ] <| List.map tag tags
+        ]
+
+
+tag : String -> Element msg
+tag value =
+    el
+        [ Background.color bgPrimary
+        , Border.rounded 5
+        , paddingXY 7 3
+        ]
+    <|
+        text value
+
+
+bodyTeaser : String -> Element msg
+bodyTeaser bodyText =
+    paragraph [ Font.color fgSecondary ]
+        [ text bodyText ]
