@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import Browser
 import Browser.Dom exposing (Viewport)
-import Browser.Events
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -17,6 +16,7 @@ import Task
 --Constants
 
 
+poppinsFontFamily : Attribute msg
 poppinsFontFamily =
     Font.family
         [ Font.external
@@ -27,6 +27,7 @@ poppinsFontFamily =
         ]
 
 
+firacodeFontFamily : Attribute msg
 firacodeFontFamily =
     Font.family
         [ Font.external
@@ -37,6 +38,7 @@ firacodeFontFamily =
         ]
 
 
+montserratFontFamily : Attribute msg
 montserratFontFamily =
     Font.family
         [ Font.external
@@ -47,47 +49,36 @@ montserratFontFamily =
         ]
 
 
+bgPrimary : Color
 bgPrimary =
-    rgb255 255 255 255
+    rgb255 240 253 252
 
 
+bgSecondary : Color
 bgSecondary =
-    rgb255 30 30 30
+    rgb255 198 224 225
 
 
+bgTertiary : Color
 bgTertiary =
-    rgb 0 0 0
+    rgb255 97 131 128
 
 
+fgPrimary : Color
 fgPrimary =
-    rgb 0 0 0
+    rgb255 25 34 31
 
 
+fgSecondary : Color
 fgSecondary =
-    rgb255 70 70 70
-
-
-fgTertiary =
-    rgb255 255 255 255
-
-
-type alias FontSizes =
-    { bigFont : Int
-    , normalFont : Int
-    }
-
-
-fontSizes : FontSizes
-fontSizes =
-    { bigFont = 36
-    , normalFont = 20
-    }
+    rgb255 89 109 108
 
 
 
 --Main
 
 
+main : Program () Model Msg
 main =
     Browser.element
         { init = init
@@ -113,7 +104,7 @@ init _ =
 
 
 subscriptions : model -> Sub msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
@@ -138,42 +129,25 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Element.layout [] <|
+    Element.layout
+        [ Font.size 14
+        , poppinsFontFamily
+        , Font.color fgPrimary
+        ]
+    <|
         column
             [ width fill
+            , Background.color bgPrimary
             , height fill
             ]
-            [ hero model.deviceClass
+            [ hero model.windowHeight model.deviceClass
             , portfolio
             ]
 
 
-portfolio : Element msg
-portfolio =
-    column
-        [ Border.roundEach
-            { topLeft = 36
-            , topRight = 36
-            , bottomRight = 0
-            , bottomLeft = 0
-            }
-        , Background.color bgSecondary
-        , padding 50
-        , width fill
-        , alignBottom
-        ]
-        [ el
-            [ Font.color fgTertiary
-            , Font.size 40
-            , Font.heavy
-            ]
-            (text "My Portfolio")
-        ]
-
-
-hero : Element.DeviceClass -> Element Msg
-hero deviceClass =
-    row [] [ logo, info ]
+hero : Int -> Element.DeviceClass -> Element Msg
+hero windowHeight _ =
+    row [ height (px (windowHeight - 20)) ] [ logo, info ]
 
 
 logo : Element msg
@@ -196,26 +170,41 @@ logo =
 info : Element Msg
 info =
     column
-        [ spacing 60
-        , centerX
+        [ spacing 54
+        , paddingXY 120 50
         ]
         [ column [ spacing 28 ]
-            [ infoSubText "Hi, I'm"
+            [ el
+                [ Font.size 36
+                , Font.color fgSecondary
+                , poppinsFontFamily
+                ]
+                (text "Hi, I'm")
             , el
-                [ Region.heading 1, poppinsFontFamily ]
+                [ Font.size 48
+                , Font.heavy
+                , poppinsFontFamily
+                , Region.heading 1
+                ]
                 (text "Jeff Jacob Joy")
             ]
-        , column [ spacing 35 ]
+        , column [ spacing 20 ]
             [ column [ spacing 8 ]
                 [ infoSubText "I'm a"
                 , el
-                    [ Region.heading 2, firacodeFontFamily ]
+                    [ Font.size 36
+                    , Region.heading 2
+                    , firacodeFontFamily
+                    ]
                     (text "Programmer")
                 ]
             , column [ spacing 8 ]
                 [ infoSubText "and a"
                 , el
-                    [ Region.heading 2, montserratFontFamily ]
+                    [ Font.size 36
+                    , Region.heading 2
+                    , montserratFontFamily
+                    ]
                     (text "Designer")
                 ]
             ]
@@ -225,32 +214,73 @@ info =
 
 infoSubText : String -> Element Msg
 infoSubText value =
-    el [ Font.size fontSizes.bigFont, Font.color fgSecondary, poppinsFontFamily ] <| text value
+    el
+        [ Font.size 18
+        , Font.color fgSecondary
+        , poppinsFontFamily
+        ]
+    <|
+        text value
 
 
 contactMeButton : Element Msg
 contactMeButton =
-    el [ width fill ] <|
-        Input.button
-            [ Background.color bgSecondary
-            , paddingXY 50 30
-            , centerX
-            , Border.roundEach
-                { topLeft = 30
-                , topRight = 30
-                , bottomRight = 72
-                , bottomLeft = 30
-                }
-            ]
-            { label =
-                el [ Font.size fontSizes.bigFont, Font.color fgTertiary, Font.heavy, poppinsFontFamily ]
-                    (row [ spacing 20 ]
-                        [ text "Contact Me"
-                        , image []
-                            { src = "/assets/phone.svg"
-                            , description = ""
-                            }
-                        ]
-                    )
-            , onPress = Just ClickContact
+    Input.button
+        [ Background.gradient
+            { angle = 3 * pi / 4
+            , steps = [ rgb255 33 53 54, fgPrimary ]
             }
+        , paddingXY 40 23
+        , Border.rounded 20
+        ]
+        { label =
+            el
+                [ Font.size 24
+                , Font.color bgPrimary
+                , Font.heavy
+                , poppinsFontFamily
+                ]
+                (row [ spacing 20 ]
+                    [ text "Contact Me"
+                    , image []
+                        { src = "/assets/phone.svg"
+                        , description = ""
+                        }
+                    ]
+                )
+        , onPress = Just ClickContact
+        }
+
+
+portfolio : Element msg
+portfolio =
+    el
+        [ paddingEach
+            { top = 0
+            , right = 0
+            , bottom = 0
+            , left = 180
+            }
+        , width fill
+        ]
+    <|
+        column
+            [ Border.roundEach
+                { topLeft = 36
+                , bottomLeft = 36
+                , topRight = 0
+                , bottomRight = 0
+                }
+            , Background.color bgSecondary
+            , paddingXY 60 42
+            , width fill
+            , alignBottom
+            ]
+            [ el
+                [ Font.color fgPrimary
+                , Font.size 36
+                , Font.heavy
+                ]
+                (text "My Portfolio")
+            ]
+
