@@ -21,7 +21,7 @@ poppinsFontFamily =
     Font.family
         [ Font.external
             { name = "Poppins"
-            , url = "https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap"
+            , url = "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
             }
         , Font.sansSerif
         ]
@@ -116,7 +116,7 @@ init _ =
     )
 
 
-subscriptions : model -> Sub msg
+subscriptions : Model -> Sub msg
 subscriptions _ =
     Sub.none
 
@@ -157,6 +157,7 @@ view model =
             [ hero model.windowHeight model.deviceClass
             , portfolio
             , blog model.posts
+            , footer
             ]
 
 
@@ -192,13 +193,11 @@ info =
             [ el
                 [ Font.size 36
                 , Font.color fgSecondary
-                , poppinsFontFamily
                 ]
                 (text "Hi, I'm")
             , el
                 [ Font.size 48
                 , Font.heavy
-                , poppinsFontFamily
                 , Region.heading 1
                 ]
                 (text "Jeff Jacob Joy")
@@ -232,7 +231,6 @@ infoSubText value =
     el
         [ Font.size 18
         , Font.color fgSecondary
-        , poppinsFontFamily
         ]
     <|
         text value
@@ -253,7 +251,6 @@ contactMeButton =
                 [ Font.size 24
                 , Font.color bgPrimary
                 , Font.heavy
-                , poppinsFontFamily
                 ]
                 (row [ spacing 20 ]
                     [ text "Contact Me"
@@ -303,7 +300,7 @@ portfolio =
 blog : List Post -> Element msg
 blog posts =
     column
-        [ paddingXY 240 77
+        [ padding 240
         , spacing 50
         ]
         [ el
@@ -368,3 +365,14 @@ bodyTeaser : String -> Element msg
 bodyTeaser bodyText =
     paragraph [ Font.color fgSecondary ]
         [ text bodyText ]
+
+
+footer : Element Msg
+footer =
+    row
+        [ Font.color bgPrimary
+        , Background.color bgTertiary
+        , width fill
+        , paddingXY 240 40
+        ]
+        [ el [ Font.size 24, Font.semiBold ] <| text "Jeff Jacob Joy" ]
