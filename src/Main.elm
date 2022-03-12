@@ -88,10 +88,16 @@ main =
         }
 
 
+type Page
+    = Home
+    | PostView Post
+
+
 type alias Model =
     { windowHeight : Int
     , deviceClass : Element.DeviceClass
     , posts : List Post
+    , page : Page
     }
 
 
@@ -111,6 +117,7 @@ init _ =
               , bodyText = "Recently I checked out Penpot; a figma open-source alternative made in clojure script. Clojure is functional lisp like java, so clojure script should be javascript but functional lisp like. I ran Penpot in a docker instance, and it was just as fast as figma which uses a wasm binary to draw the editor canvas."
               }
             ]
+      , page = Home
       }
     , Task.perform GotNewViewport Browser.Dom.getViewport
     )
@@ -124,21 +131,24 @@ subscriptions _ =
 type Msg
     = GotNewViewport Viewport
     | ClickContact
+    | OpenBlogPost Post
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotNewViewport viewport ->
-            ( { windowHeight = round viewport.viewport.height
-              , deviceClass = model.deviceClass
-              , posts = model.posts
-              }
+            ( { model | windowHeight = round viewport.viewport.height }
             , Cmd.none
             )
 
         ClickContact ->
             ( model, Cmd.none )
+
+        OpenBlogPost post ->
+            ( { model | page = PostView post }
+            , Cmd.none
+            )
 
 
 view : Model -> Html Msg
@@ -149,16 +159,25 @@ view model =
         , Font.color fgPrimary
         ]
     <|
-        column
-            [ width fill
-            , Background.color bgPrimary
-            , height fill
-            ]
-            [ hero model.windowHeight model.deviceClass
-            , portfolio
-            , blog model.posts
-            , footer
-            ]
+        case model.page of
+            Home ->
+                column
+                    [ width fill
+                    , Background.color bgPrimary
+                    , height fill
+                    ]
+                    [ hero model.windowHeight model.deviceClass
+                    , portfolio
+                    , blog model.posts
+                    , footer
+                    ]
+
+            PostView post ->
+                postView post
+
+
+
+-- Hero
 
 
 hero : Int -> Element.DeviceClass -> Element Msg
@@ -297,10 +316,34 @@ portfolio =
             ]
 
 
-blog : List Post -> Element msg
+
+-- Blog
+
+
+type alias Post =
+    { title : String
+    , date : String
+    , tags : List String
+    , bodyText : String
+    }
+
+
+postView : Post -> Element Msg
+postView post =
+    column
+        [ width fill
+        , Background.color bgPrimary
+        ]
+        [ el [] (text post.title)
+        , el [] (text post.date)
+        , row [ spacing 5 ] <| List.map tag post.tags
+        ]
+
+
+blog : List Post -> Element Msg
 blog posts =
     column
-        [ padding 240
+        [ paddingEach { top = 90, left = 240, right = 240, bottom = 240 }
         , spacing 50
         ]
         [ el
@@ -313,27 +356,23 @@ blog posts =
         ]
 
 
-type alias Post =
-    { title : String
-    , date : String
-    , tags : List String
-    , bodyText : String
-    }
-
-
-blogPost : Post -> Element msg
+blogPost : Post -> Element Msg
 blogPost post =
-    column
-        [ spacing 10 ]
-        [ el
-            [ Font.size 24
-            , Font.heavy
-            ]
-          <|
-            text post.title
-        , blogMetadata post.date post.tags
-        , bodyTeaser post.bodyText
-        ]
+    Input.button []
+        { label =
+            column
+                [ spacing 10 ]
+                [ el
+                    [ Font.size 24
+                    , Font.heavy
+                    ]
+                  <|
+                    text post.title
+                , blogMetadata post.date post.tags
+                , paragraph [ Font.color fgSecondary ] [ text post.bodyText ]
+                ]
+        , onPress = Just (OpenBlogPost post)
+        }
 
 
 blogMetadata : String -> List String -> Element msg
@@ -361,10 +400,8 @@ tag value =
         text value
 
 
-bodyTeaser : String -> Element msg
-bodyTeaser bodyText =
-    paragraph [ Font.color fgSecondary ]
-        [ text bodyText ]
+
+-- Footer
 
 
 footer : Element Msg
