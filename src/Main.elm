@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Browser.Dom exposing (Viewport)
+import Constants exposing (..)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -10,72 +11,6 @@ import Element.Input as Input
 import Element.Region as Region
 import Html exposing (Html)
 import Task
-
-
-
---Constants
-
-
-poppinsFontFamily : Attribute msg
-poppinsFontFamily =
-    Font.family
-        [ Font.external
-            { name = "Poppins"
-            , url = "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
-            }
-        , Font.sansSerif
-        ]
-
-
-firacodeFontFamily : Attribute msg
-firacodeFontFamily =
-    Font.family
-        [ Font.external
-            { name = "FiraCode"
-            , url = "https://fonts.googleapis.com/css2?family=Fira+Code:wght@700&display=swap"
-            }
-        , Font.monospace
-        ]
-
-
-montserratFontFamily : Attribute msg
-montserratFontFamily =
-    Font.family
-        [ Font.external
-            { name = "Montserrat"
-            , url = "https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap"
-            }
-        , Font.sansSerif
-        ]
-
-
-bgPrimary : Color
-bgPrimary =
-    rgb255 240 253 252
-
-
-bgSecondary : Color
-bgSecondary =
-    rgb255 198 224 225
-
-
-bgTertiary : Color
-bgTertiary =
-    rgb255 97 131 128
-
-
-fgPrimary : Color
-fgPrimary =
-    rgb255 25 34 31
-
-
-fgSecondary : Color
-fgSecondary =
-    rgb255 89 109 108
-
-
-
---Main
 
 
 main : Program () Model Msg
@@ -224,21 +159,27 @@ info =
         , column [ spacing 20 ]
             [ column [ spacing 8 ]
                 [ infoSubText "I'm a"
-                , el
-                    [ Font.size 36
-                    , Region.heading 2
-                    , firacodeFontFamily
+                , row []
+                    [ el
+                        [ Font.size 36
+                        , Region.heading 2
+                        , firacodeFontFamily
+                        ]
+                        (text "Programmer")
+                    , el [] (text "|")
                     ]
-                    (text "Programmer")
                 ]
             , column [ spacing 8 ]
                 [ infoSubText "and a"
-                , el
-                    [ Font.size 36
-                    , Region.heading 2
-                    , montserratFontFamily
+                , row []
+                    [ el
+                        [ Font.size 36
+                        , Region.heading 2
+                        , montserratFontFamily
+                        ]
+                        (text "Designer")
+                    , el [] (text "arrow here")
                     ]
-                    (text "Designer")
                 ]
             ]
         , contactMeButton
@@ -281,6 +222,10 @@ contactMeButton =
                 )
         , onPress = Just ClickContact
         }
+
+
+
+-- Portfolio
 
 
 portfolio : Element msg
