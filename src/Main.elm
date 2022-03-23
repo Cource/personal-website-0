@@ -3,6 +3,8 @@ module Main exposing (..)
 import Browser
 import Browser.Dom exposing (Viewport)
 import Constants exposing (..)
+import Markdown
+import Html.Attributes
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -44,12 +46,15 @@ init _ =
             [ { title = "Switching to Emacs"
               , date = "10 Oct 2021"
               , tags = [ "Emacs", "Text Editor" ]
-              , bodyText = "Emacs has been a really helpful experience to me especially with Magit, Evilmode and Orgmode. So I have decided to switch all of my programming and typing stuff to emacs. ..."
+              , bodyText = "Emacs has been a really helpful experience to me especially with Magit, Evilmode and Orgmode. So I have decided to switch all of my programming and typing stuff to emacs."
               }
             , { title = "Figma like open source tool penpot looks nice"
               , date = "3 Oct 2021"
               , tags = [ "Penpot", "Figma", "Designing" ]
-              , bodyText = "Recently I checked out Penpot; a figma open-source alternative made in clojure script. Clojure is functional lisp like java, so clojure script should be javascript but functional lisp like. I ran Penpot in a docker instance, and it was just as fast as figma which uses a wasm binary to draw the editor canvas."
+              , bodyText =
+                    """# Introduction
+Recently I checked out **Penpot**; a figma open-source alternative made in clojure script.  
+Clojure is functional lisp like java, so clojure script should be javascript but functional lisp like. I ran Penpot in a docker instance, and it was just as fast as figma which uses a wasm binary to draw the editor canvas."""
               }
             ]
       , page = Home
@@ -278,11 +283,30 @@ postView post =
     column
         [ width fill
         , Background.color bgPrimary
+        , paddingXY 200 100
+        , spacing 20
         ]
-        [ el [] (text post.title)
-        , el [] (text post.date)
-        , row [ spacing 5 ] <| List.map tag post.tags
+        [ el
+            [ Font.size 36
+            , Font.heavy
+            ]
+            (text post.title)
+        , el
+            [ Font.size 20
+            , Font.color fgSecondary
+            ]
+            (text post.date)
+        , row [ spacing 5 ] <| List.map postTag post.tags
+        , paragraph [] [html <| Markdown.toHtml [Html.Attributes.attribute "class" "postBody"] post.bodyText]
         ]
+
+postTag : String -> Element msg
+postTag value =
+    el
+        [ paddingEach { top=0, left=0, right=20, bottom=0 }
+        , Font.color fgSecondary
+        ]
+        (text value)
 
 
 blog : List Post -> Element Msg
@@ -314,7 +338,9 @@ blogPost post =
                   <|
                     text post.title
                 , blogMetadata post.date post.tags
-                , paragraph [ Font.color fgSecondary ] [ text post.bodyText ]
+                , paragraph
+                    [ Font.color fgSecondary ]
+                    [ text <| String.append (String.slice 0 200 post.bodyText) "..." ]
                 ]
         , onPress = Just (OpenBlogPost post)
         }
@@ -358,3 +384,4 @@ footer =
         , paddingXY 240 40
         ]
         [ el [ Font.size 24, Font.semiBold ] <| text "Jeff Jacob Joy" ]
+
