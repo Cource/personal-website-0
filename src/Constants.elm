@@ -63,3 +63,20 @@ fgPrimary =
 fgSecondary : Color
 fgSecondary =
     rgb255 89 109 108
+
+
+--
+
+padding0 =
+    { top    = 0
+    , right  = 0
+    , bottom = 0
+    , left   = 0
+    }
+
+round0 =
+    { topLeft     = 0
+    , topRight    = 0
+    , bottomLeft  = 0
+    , bottomRight = 0
+    }

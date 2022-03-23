@@ -52,8 +52,9 @@ init _ =
               , date = "3 Oct 2021"
               , tags = [ "Penpot", "Figma", "Designing" ]
               , bodyText =
-                    """# Introduction
+                    """
 Recently I checked out **Penpot**; a figma open-source alternative made in clojure script.  
+# Introduction
 Clojure is functional lisp like java, so clojure script should be javascript but functional lisp like. I ran Penpot in a docker instance, and it was just as fast as figma which uses a wasm binary to draw the editor canvas."""
               }
             ]
@@ -71,6 +72,7 @@ subscriptions _ =
 type Msg
     = GotNewViewport Viewport
     | ClickContact
+    | GoHome
     | OpenBlogPost Post
 
 
@@ -78,12 +80,20 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotNewViewport viewport ->
-            ( { model | windowHeight = round viewport.viewport.height }
+            ( { model | windowHeight = round viewport.viewport.height
+              , deviceClass = (Element.classifyDevice
+                    { height = round viewport.viewport.height
+                    , width  = round viewport.viewport.width
+                    }).class
+              }
             , Cmd.none
             )
 
         ClickContact ->
             ( model, Cmd.none )
+
+        GoHome ->
+            ( { model | page = Home }, Cmd.none )
 
         OpenBlogPost post ->
             ( { model | page = PostView post }
@@ -94,7 +104,10 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Font.size 14
+        [ Font.size <|
+            case model.deviceClass of
+                Phone -> 14
+                _ -> 18
         , poppinsFontFamily
         , Font.color fgPrimary
         ]
@@ -106,47 +119,63 @@ view model =
                     , Background.color bgPrimary
                     , height fill
                     ]
-                    [ hero model.windowHeight model.deviceClass
+                    [ hero model
                     , portfolio
                     , blog model.posts
                     , footer
                     ]
 
             PostView post ->
-                postView post
+                postView post model.deviceClass model.page
 
 
 
 -- Hero
 
 
-hero : Int -> Element.DeviceClass -> Element Msg
-hero windowHeight _ =
-    row [ height (px (windowHeight - 20)) ] [ logo, info ]
+hero : Model -> Element Msg
+hero model =
+    row [ height (px (model.windowHeight - 20)) ] [ logo model.deviceClass model.page, info model.deviceClass ]
 
 
-logo : Element msg
-logo =
-    el
+logo : Element.DeviceClass -> Page -> Element Msg
+logo deviceClass page =
+    let
+        size = case deviceClass of
+            Phone -> 100
+            _     -> 120
+    in
+    Input.button
         [ Background.color bgTertiary
-        , width <| px 120
-        , height <| px 120
+        , width <| px size
+        , height <| px size
+        , Border.roundEach { round0 | bottomRight = 20 }
         , alignTop
         ]
-        (el [ centerY, centerX ]
-            (image []
-                { src = "/assets/J.svg"
-                , description = ""
-                }
+        { label = el [ width fill]
+            (el [ centerY, centerX ]
+                (image []
+                    { src =
+                        case page of
+                            Home -> "/assets/J.svg"
+                            _    -> "/assets/back.svg"
+                    , description = ""
+                    }
+                )
             )
-        )
+        , onPress = Just GoHome
+        }
 
-
-info : Element Msg
-info =
+info : Element.DeviceClass -> Element Msg
+info deviceClass =
     column
         [ spacing 54
-        , paddingXY 120 50
+        , paddingXY (
+            case deviceClass of
+                Phone -> 50
+                _     -> 120
+            )
+            50
         ]
         [ column [ spacing 28 ]
             [ el
@@ -171,7 +200,6 @@ info =
                         , firacodeFontFamily
                         ]
                         (text "Programmer")
-                    , el [] (text "|")
                     ]
                 ]
             , column [ spacing 8 ]
@@ -183,7 +211,6 @@ info =
                         , montserratFontFamily
                         ]
                         (text "Designer")
-                    , el [] (text "arrow here")
                     ]
                 ]
             ]
@@ -233,28 +260,25 @@ contactMeButton =
 -- Portfolio
 
 
-portfolio : Element msg
+portfolio : Element Msg
 portfolio =
+    let
+        projects =
+            [ { name = "Vote Camp", description = "A political data surveying utility" }
+            , { name = "Lorem Gang", description = "A gang of lorem people who do lorem things for fun" }
+            ]
+    in
     el
-        [ paddingEach
-            { top = 0
-            , right = 0
-            , bottom = 0
-            , left = 180
-            }
+        [ paddingEach { padding0 | left = 180 }
         , width fill
         ]
     <|
         column
-            [ Border.roundEach
-                { topLeft = 36
-                , bottomLeft = 36
-                , topRight = 0
-                , bottomRight = 0
-                }
+            [ Border.roundEach { round0 | topLeft = 36 , bottomLeft = 36 }
             , Background.color bgSecondary
             , paddingXY 60 42
             , width fill
+            , spacing 40
             , alignBottom
             ]
             [ el
@@ -263,7 +287,34 @@ portfolio =
                 , Font.heavy
                 ]
                 (text "My Portfolio")
+            , row
+                [ spacing 20 ]
+                <| List.map projectCard projects
             ]
+
+type alias Project =
+    { name : String
+    , description : String
+    }
+
+projectCard : Project -> Element Msg
+projectCard project =
+    column
+        [ Background.color bgPrimary
+        , Border.rounded 20
+        , height (px 400)
+        , width  (px 300)
+        , spacing 10
+        , padding 20
+        ]
+        [ paragraph [ alignBottom ] [text project.description]
+        , el
+            [ Font.size 24
+            , Font.heavy
+            , alignBottom
+            ]
+            (text project.name)
+        ]
 
 
 
@@ -278,32 +329,43 @@ type alias Post =
     }
 
 
-postView : Post -> Element Msg
-postView post =
-    column
+postView : Post -> Element.DeviceClass -> Page -> Element Msg
+postView post deviceClass page =
+    column [ Background.color bgPrimary ]
+    [ logo deviceClass page
+    , column
         [ width fill
-        , Background.color bgPrimary
-        , paddingXY 200 100
+        , paddingXY
+            (case deviceClass of
+                Phone -> 50
+                _      -> 200
+            )
+            50
         , spacing 20
         ]
         [ el
-            [ Font.size 36
+            [ Font.size 48
             , Font.heavy
             ]
-            (text post.title)
+            (paragraph [] [text post.title])
         , el
             [ Font.size 20
             , Font.color fgSecondary
             ]
             (text post.date)
         , row [ spacing 5 ] <| List.map postTag post.tags
-        , paragraph [] [html <| Markdown.toHtml [Html.Attributes.attribute "class" "postBody"] post.bodyText]
+        , paragraph
+            [ paddingEach { padding0 | top = 20 }
+            ]
+            -- Markdown viewer
+            [ html <| Markdown.toHtml [Html.Attributes.attribute "class" "postBody"] post.bodyText ]
         ]
+    ]
 
 postTag : String -> Element msg
 postTag value =
     el
-        [ paddingEach { top=0, left=0, right=20, bottom=0 }
+        [ paddingEach { padding0 | right=20 }
         , Font.color fgSecondary
         ]
         (text value)
@@ -313,7 +375,7 @@ blog : List Post -> Element Msg
 blog posts =
     column
         [ paddingEach { top = 90, left = 240, right = 240, bottom = 240 }
-        , spacing 50
+        , spacing 80
         ]
         [ el
             [ Font.heavy
@@ -321,7 +383,7 @@ blog posts =
             ]
           <|
             text "Blog"
-        , column [ spacing 40 ] <| List.map blogPost posts
+        , column [ spacing 60 ] <| List.map blogPost posts
         ]
 
 
