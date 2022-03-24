@@ -339,7 +339,7 @@ postView post deviceClass page =
             , Font.color fgSecondary
             ]
             (text post.date)
-        , row [ spacing 5 ] <| List.map postTag post.tags
+        , row [ spacing 5 ] <| List.map tag post.tags
         , paragraph
             [ paddingEach { padding0 | top = 20 }
             ]
@@ -348,14 +348,6 @@ postView post deviceClass page =
         ]
     , footer
     ]
-
-postTag : String -> Element msg
-postTag value =
-    el
-        [ paddingEach { padding0 | right=20 }
-        , Font.color fgSecondary
-        ]
-        (text value)
 
 
 blog : List Post -> Element Msg
@@ -379,7 +371,7 @@ blogPost post =
     Input.button []
         { label =
             column
-                [ spacing 10 ]
+                [ spacing 20 ]
                 [ el
                     [ Font.size 24
                     , Font.heavy
@@ -398,23 +390,20 @@ blogPost post =
 blogMetadata : String -> List String -> Element msg
 blogMetadata date tags =
     row
-        [ Background.color bgSecondary
-        , paddingXY 10 3
-        , spacing 10
+        [ spacing 10
         , Font.color fgSecondary
-        , Border.rounded 5
         ]
         [ text date
-        , row [ spacing 5 ] <| List.map tag tags
+        , row [ spacing 10 ] <| List.map tag tags
         ]
 
 
 tag : String -> Element msg
 tag value =
     el
-        [ Background.color bgPrimary
-        , Border.rounded 5
-        , paddingXY 7 3
+        [ Background.color bgSecondary
+        , Border.rounded 20
+        , paddingXY 10 5
         ]
     <|
         text value
