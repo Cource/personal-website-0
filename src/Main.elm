@@ -1,8 +1,10 @@
 module Main exposing (..)
 
+import Constants exposing (..)
+import Posts exposing (..)
+
 import Browser
 import Browser.Dom exposing (Viewport)
-import Constants exposing (..)
 import Markdown
 import Html.Attributes
 import Element exposing (..)
@@ -41,24 +43,9 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { windowHeight = 1024
-      , deviceClass = Element.Desktop
-      , posts =
-            [ { title = "Switching to Emacs"
-              , date = "10 Oct 2021"
-              , tags = [ "Emacs", "Text Editor" ]
-              , bodyText = "Emacs has been a really helpful experience to me especially with Magit, Evilmode and Orgmode. So I have decided to switch all of my programming and typing stuff to emacs."
-              }
-            , { title = "Figma like open source tool penpot looks nice"
-              , date = "3 Oct 2021"
-              , tags = [ "Penpot", "Figma", "Designing" ]
-              , bodyText =
-                    """
-Recently I checked out **Penpot**; a figma open-source alternative made in clojure script.  
-# Introduction
-Clojure is functional lisp like java, so clojure script should be javascript but functional lisp like. I ran Penpot in a docker instance, and it was just as fast as figma which uses a wasm binary to draw the editor canvas."""
-              }
-            ]
-      , page = Home
+      , deviceClass  = Element.Desktop
+      , posts        = posts
+      , page         = Home
       }
     , Task.perform GotNewViewport Browser.Dom.getViewport
     )
@@ -321,20 +308,19 @@ projectCard project =
 -- Blog
 
 
-type alias Post =
-    { title : String
-    , date : String
-    , tags : List String
-    , bodyText : String
-    }
-
 
 postView : Post -> Element.DeviceClass -> Page -> Element Msg
 postView post deviceClass page =
-    column [ Background.color bgPrimary ]
+    column
+    [ Background.color bgPrimary
+    , height fill
+    , width fill
+    ]
     [ logo deviceClass page
     , column
-        [ width fill
+        [ width (fill |> maximum 1500)
+        , height fill
+        , centerX
         , paddingXY
             (case deviceClass of
                 Phone -> 50
@@ -360,6 +346,7 @@ postView post deviceClass page =
             -- Markdown viewer
             [ html <| Markdown.toHtml [Html.Attributes.attribute "class" "postBody"] post.bodyText ]
         ]
+    , footer
     ]
 
 postTag : String -> Element msg
