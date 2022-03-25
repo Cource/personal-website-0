@@ -91,10 +91,10 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Font.size <|
+        [ fontSize <|
             case model.deviceClass of
-                Phone -> 14
-                _ -> 18
+                Phone -> 2
+                _ -> 2
         , poppinsFontFamily
         , Font.color fgPrimary
         ]
@@ -107,22 +107,32 @@ view model =
                     , height fill
                     ]
                     [ hero model
-                    , portfolio
-                    , blog model.posts
-                    , footer
+                    , portfolio model.deviceClass
+                    , blog model.deviceClass model.posts
+                    , footer model.deviceClass
                     ]
 
             PostView post ->
                 postView post model.deviceClass model.page
 
 
+scale : Int -> Int
+scale x = 12 + round (toFloat x * 1.6 ^ toFloat x)
+
+fontSize : Int -> Attr decorative msg
+fontSize = Font.size << scale
 
 -- Hero
 
 
 hero : Model -> Element Msg
 hero model =
-    row [ height (px (model.windowHeight - 20)) ] [ logo model.deviceClass model.page, info model.deviceClass ]
+    (case model.deviceClass of
+        Phone -> column
+        _     -> row) [ height (px (model.windowHeight - 20)) ]
+        [ logo model.deviceClass model.page
+        , info model.deviceClass
+        ]
 
 
 logo : Element.DeviceClass -> Page -> Element Msg
@@ -162,16 +172,23 @@ info deviceClass =
                 Phone -> 50
                 _     -> 120
             )
-            50
+            0
+        , case deviceClass of
+            Phone -> alignTop
+            _     -> centerY
         ]
         [ column [ spacing 28 ]
             [ el
-                [ Font.size 36
+                [ fontSize 4
                 , Font.color fgSecondary
                 ]
                 (text "Hi, I'm")
             , el
-                [ Font.size 48
+                [ fontSize (
+                    case deviceClass of
+                        Phone -> 4
+                        _     -> 5
+                  )
                 , Font.heavy
                 , Region.heading 1
                 ]
@@ -182,7 +199,7 @@ info deviceClass =
                 [ infoSubText "I'm a"
                 , row []
                     [ el
-                        [ Font.size 36
+                        [ fontSize 4
                         , Region.heading 2
                         , firacodeFontFamily
                         ]
@@ -193,7 +210,7 @@ info deviceClass =
                 [ infoSubText "and a"
                 , row []
                     [ el
-                        [ Font.size 36
+                        [ fontSize 4
                         , Region.heading 2
                         , montserratFontFamily
                         ]
@@ -208,7 +225,7 @@ info deviceClass =
 infoSubText : String -> Element Msg
 infoSubText value =
     el
-        [ Font.size 18
+        [ fontSize 3
         , Font.color fgSecondary
         ]
     <|
@@ -227,7 +244,7 @@ contactMeButton =
         ]
         { label =
             el
-                [ Font.size 24
+                [ fontSize 3
                 , Font.color bgPrimary
                 , Font.heavy
                 ]
@@ -247,8 +264,8 @@ contactMeButton =
 -- Portfolio
 
 
-portfolio : Element Msg
-portfolio =
+portfolio : Element.DeviceClass -> Element Msg
+portfolio deviceClass =
     let
         projects =
             [ { name = "Vote Camp", description = "A political data surveying utility" }
@@ -256,26 +273,34 @@ portfolio =
             ]
     in
     el
-        [ paddingEach { padding0 | left = 180 }
+        [ paddingEach { padding0 | left = (
+            case deviceClass of
+                Phone -> 40
+                _     -> 180
+            ) }
         , width fill
         ]
     <|
         column
             [ Border.roundEach { round0 | topLeft = 36 , bottomLeft = 36 }
             , Background.color bgSecondary
-            , paddingXY 60 42
+            , paddingEach { padding0 | top = 60, left = if deviceClass == Phone then 60 else 90 , bottom = 60 }
             , width fill
             , spacing 40
             , alignBottom
             ]
             [ el
                 [ Font.color fgPrimary
-                , Font.size 36
+                , fontSize 4
                 , Font.heavy
                 ]
                 (text "My Portfolio")
             , row
-                [ spacing 20 ]
+                [ spacing 20
+                , width fill
+                , height <| px 420
+                , scrollbarX
+                ]
                 <| List.map projectCard projects
             ]
 
@@ -296,7 +321,7 @@ projectCard project =
         ]
         [ paragraph [ alignBottom ] [text project.description]
         , el
-            [ Font.size 24
+            [ fontSize 3
             , Font.heavy
             , alignBottom
             ]
@@ -329,36 +354,41 @@ postView post deviceClass page =
             50
         , spacing 20
         ]
-        [ el
-            [ Font.size 48
+        [ paragraph
+            [ fontSize (if deviceClass == Phone then 4 else 5)
             , Font.heavy
-            ]
-            (paragraph [] [text post.title])
+            ] [text post.title]
         , el
-            [ Font.size 20
+            [ fontSize 3
             , Font.color fgSecondary
             ]
             (text post.date)
         , row [ spacing 5 ] <| List.map tag post.tags
         , paragraph
-            [ paddingEach { padding0 | top = 20 }
+            [ paddingEach { padding0 | top = 20, bottom = 100 }
+            , spacing 10
             ]
             -- Markdown viewer
             [ html <| Markdown.toHtml [Html.Attributes.attribute "class" "postBody"] post.bodyText ]
         ]
-    , footer
+    , footer deviceClass
     ]
 
 
-blog : List Post -> Element Msg
-blog posts =
+blog : Element.DeviceClass -> List Post -> Element Msg
+blog deviceClass posts =
     column
-        [ paddingEach { top = 90, left = 240, right = 240, bottom = 240 }
+        [ paddingEach { top = 120, left = (
+            case deviceClass of
+                Phone -> 60
+                _     -> 240
+            ), right = 240, bottom = 240 }
         , spacing 80
+        , width fill
         ]
         [ el
             [ Font.heavy
-            , Font.size 48
+            , fontSize 5
             ]
           <|
             text "Blog"
@@ -373,7 +403,7 @@ blogPost post =
             column
                 [ spacing 20 ]
                 [ el
-                    [ Font.size 24
+                    [ fontSize 3
                     , Font.heavy
                     ]
                   <|
@@ -413,13 +443,13 @@ tag value =
 -- Footer
 
 
-footer : Element Msg
-footer =
+footer : Element.DeviceClass -> Element Msg
+footer deviceClass =
     row
         [ Font.color bgPrimary
         , Background.color bgTertiary
         , width fill
-        , paddingXY 240 40
+        , paddingXY (if deviceClass /= Phone then 240 else 60) 80 
         ]
-        [ el [ Font.size 24, Font.semiBold ] <| text "Jeff Jacob Joy" ]
+        [ el [ fontSize 3, Font.semiBold ] <| text "Jeff Jacob Joy" ]
 
