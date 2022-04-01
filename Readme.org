@@ -1,0 +1,11 @@
+#+TITLE:       Personal website
+#+AUTHOR:      Jeff Jacob Joy
+#+DESCRIPTION: A website for sharing my portfolio, contact information, and blog
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+
+This is a single page application made for displaying work that I have done in
+the past, and blog posts that I plan to write in the future.
+
+Written in [[https://package.elm-lang.org][elm]], this application uses the elm architecture to manage and
+update state, and to render the whole page. It also uses [[https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/][mdgriffith's elm-ui]],
+which is meant to be a replacement to using css in elm applications.
